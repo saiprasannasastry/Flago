@@ -1,0 +1,50 @@
+syntax="proto3";
+
+package flago;
+option go_package = "github.com/segmentio/Flago/pkg/proto";
+import "google/protobuf/empty.proto";
+//import "google/protobuf/struct.proto";
+
+message createFlagReq{
+  enum Family{
+    UNIVERSAL_DISABLED=0;
+    UNIVERSAL_ENABLED=1;
+    PERCENTAGE_OF=2;
+    COMBINATION_OF=3;
+    SET_OF=4;
+    REFERENCE_TYPE=5;
+    NOT_SET_OF=6;
+  }
+  Family flagFamily=1;
+  bytes flagData=2;
+  FlagReq flagReg=3;
+}
+
+message getFlagReq{
+  FlagReq flagData=1;
+}
+
+message FlagReq{
+  string customerId=1;
+  string customerName=2;
+  string feature=3;
+}
+message FlagResp{
+  bool enabled=1;
+}
+
+service  FlagoService{
+  //Create Flag allows you to define new set of flags
+  rpc CreateFlag(createFlagReq) returns (google.protobuf.Empty);
+  //GetFlag allows the control plane to query dataPlane to
+  // validate if the flag is enabled or not
+  rpc GetFlag(getFlagReq) returns (FlagResp);
+  // OnFlag turns the flag on
+  // so the control plane can check get get all data
+  // from Data plane when Flag is enabled
+  rpc OnFlag(FlagReq) returns (FlagResp);
+  // OffFlag turns the flag on
+  // so the control plane can check get get all data
+  // from Data plane when Flag is enabled
+  rpc OffFlag(FlagReq) returns (FlagResp);
+}
