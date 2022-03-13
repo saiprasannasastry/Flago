@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/require"
 	"github.com/tj/assert"
+	"sync"
 	"testing"
 )
 
@@ -76,10 +77,11 @@ func TestRedis(t *testing.T) {
 		assert.Equal(t, 2, enCount)
 	})
 	t.Run("enable flag for set of customers", func(t *testing.T) {
-		teardown(redisClient)
+	//	teardown(redisClient)
 		feature1, feature2 := "Feature0", "Feature1"
 		err := client.EnableAllCustomers(feature1)
-		require.NoError(t, err)
+		//already enabled above
+		require.Error(t, err)
 
 		err = client.DisableAllCustomers(feature2)
 		require.NoError(t, err)
@@ -94,28 +96,57 @@ func TestRedis(t *testing.T) {
 		err = client.AddToSetOfcustomers(customerName, customerId, feature1)
 		require.NoError(t, err)
 
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			err = client.AddToSetOfcustomers(customerName, customerId, "feature3")
+			require.NoError(t, err)
+		}()
+
+
 		err = client.AddToSetOfcustomers(customerName, customerId, feature1)
 		require.Error(t, err)
 
 		err = client.AddToSetOfcustomers(customerName, customerId, feature2)
 		require.NoError(t, err)
-
+		wg.Wait()
 		disCount, enCount = disablekeysCount(t, redisClient), enableCount(t, redisClient)
 		assert.Equal(t, 0, disCount)
-		assert.Equal(t, 0, enCount)
+		assert.Equal(t, 1, enCount)
+	})
 
+	t.Run("enable flag for a reference Type of customers (with and without errors)", func(t *testing.T) {
+		feature0, feature1 := "feature0", "feature1"
+
+		err := client.AddToRef("bets", feature0)
+		require.Error(t, err)
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			err = client.AddToRef("alpha", feature0)
+			require.NoError(t, err)
+		}()
+		wg.Wait()
+		err = client.AddToRef("alpha", feature1)
+		require.NoError(t, err)
 	})
 
 }
 
 func teardown(client *redis.Client) {
-	client.Del(DISABLE_ALL_KEY)
-	client.Del(ENABLE_ALL_KEY)
+	client.FlushAll()
 }
 
 func setup(client *redis.Client) {
 	client.SAdd(DISABLE_ALL_KEY)
 	client.SAdd(ENABLE_ALL_KEY)
+	client.SAdd("alpha", "test::1", "test::2")
+
 }
 
 func disablekeysCount(t *testing.T, client *redis.Client) int {

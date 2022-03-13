@@ -22,6 +22,8 @@ type PoolInterface interface {
 	EnableAllCustomers(feature string) error
 	DisableAllCustomers(feature string) error
 	AddToSetOfcustomers(customerName string, customerId string, feature string) error
+	AddToRef(refType string, feature string) error
+	GetAllCustomers(refType string) ([]string, error)
 }
 
 func NewPool(redisClient *redis.Client) PoolInterface {

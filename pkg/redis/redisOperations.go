@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/apex/log"
 	"github.com/go-redis/redis"
+	"github.com/hashicorp/go-multierror"
+	"strings"
 )
 
 //EnableAllCustomers enables features for all customers
@@ -69,7 +71,6 @@ func (p Pool) DisableAllCustomers(feature string) error {
 //AddToSetOfcustomers enables the flag for the reature to AddToSetOfCustomers
 func (p Pool) AddToSetOfcustomers(customerName string, customerId string, feature string) error {
 
-
 	key := fmt.Sprintf("%v::%v", customerName, customerId)
 
 	found := p.RedisClient.SMembers(key)
@@ -83,16 +84,47 @@ func (p Pool) AddToSetOfcustomers(customerName string, customerId string, featur
 	keys := convertSliceToMap(foundValues)
 
 	if keys[feature] {
-		newError := errors.New("flag already enabled for feature")
-		log.Errorf("%v %v for customer %v", newError,feature,customerName)
+		newError := fmt.Errorf("flag already enabled for feature %v for customer %v", feature, customerName)
+		log.Errorf("%v ", newError)
 		return newError
 	}
 
-	//we want to remove this from both the places
+	//since we are enabling for one or more customers we need to remove from disable all
 	p.RedisClient.SRem(DISABLE_ALL_KEY, feature)
-	p.RedisClient.SRem(ENABLE_ALL_KEY, feature)
+	//p.RedisClient.SRem(ENABLE_ALL_KEY, feature)
 	log.Infof("enabling feature %v for customer %v ", feature, customerName)
 	return p.addKey(key, feature)
+}
+
+//AddToRef enables flag for all reference type customers
+func (p Pool) AddToRef(refType string, feature string) error {
+	foundKeys, err := p.GetAllCustomers(refType)
+	if err != nil {
+		log.WithError(err).Errorf("failed to get result for refType %v ", refType)
+		return err
+	}
+
+	if len(foundKeys) == 0 {
+		log.Errorf("refType not found %v", refType)
+		return errors.New("refType not found")
+	}
+	var error error
+
+	for _, customers := range foundKeys {
+		//we want to insert to each company
+		customerDetails := strings.Split(customers, "::")
+		customerName, iD := customerDetails[0], customerDetails[1]
+		err = p.AddToSetOfcustomers(customerName, iD, feature)
+		if err != nil {
+			error = multierror.Append(error, err)
+		}
+	}
+	return error
+}
+
+//Get all customers returns us list of customers for given data
+func (p Pool) GetAllCustomers(refType string) ([]string, error) {
+	return p.RedisClient.SMembers(refType).Result()
 }
 
 func (p Pool) removeKey(keyName string, feature string) error {
