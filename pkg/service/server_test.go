@@ -18,7 +18,7 @@ const (
 	ENABLE_ALL_KEY  = "enable:all"
 )
 
-func TestCreateServer(t *testing.T) {
+func TestServer(t *testing.T) {
 	redisInstance := miniredis.NewMiniRedis()
 	defer redisInstance.Close()
 	redisInstance.Start()
@@ -225,6 +225,15 @@ func TestCreateServer(t *testing.T) {
 		})
 		require.Error(t, err, "same flag as above")
 
+	})
+	t.Run("get flag enabled", func(t *testing.T) {
+		_, err := flagReq.GetFlag(ctx, &proto.FlagReq{Feature: "feature55", CustomerName: "Twilio", CustomerId: "1"})
+		require.NoError(t, err)
+	})
+	t.Run("get all flags for customer", func(t *testing.T) {
+		resp, err := flagReq.GetFlags(ctx, &proto.FlagReq{Feature: "doesnt matter", CustomerName: "Twilio", CustomerId: "1"})
+		require.NoError(t, err)
+		assert.Equal(t, 3, len(resp.Flags))
 	})
 
 	tearDown(redisClient)

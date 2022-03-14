@@ -20,7 +20,6 @@ type Flago struct {
 }
 type FlagExpressionType string
 
-
 type Manager struct {
 	TaskChan     chan FlagReq
 	WorkerCount  int

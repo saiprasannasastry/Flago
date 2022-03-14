@@ -24,7 +24,6 @@ func UnmarshalandStore(ctx context.Context, f *Flago, flagData []byte, flagFamil
 	switch flagFamily {
 	case proto.CreateFlagReq_UNIVERSAL_DISABLED.String():
 		var feature string
-		log.Infof("%v test",string(flagData))
 		err := json.Unmarshal(flagData, &feature)
 		if err != nil {
 			log.WithError(err).Errorf("Invalid data passed for flag type %v", proto.CreateFlagReq_UNIVERSAL_DISABLED.String())
