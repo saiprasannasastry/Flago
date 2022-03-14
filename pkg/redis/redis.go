@@ -25,6 +25,8 @@ type PoolInterface interface {
 	AddToRef(refType string, feature string) error
 	GetAllCustomers(refType string) ([]string, error)
 	GetFlagForCustomer(customerDetails, feature string) (bool, error)
+	DeleteFlag(refType string, feature string) (int64, error)
+	AddFlag(refType string, feature string) (int64, error)
 }
 
 func NewPool(redisClient *redis.Client) PoolInterface {

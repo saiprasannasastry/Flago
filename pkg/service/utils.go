@@ -69,11 +69,8 @@ func UnmarshalandStore(ctx context.Context, f *Flago, flagData []byte, flagFamil
 				select {
 				case err, ok := <-f.Manager.ErrorChan:
 					if ok {
-						log.Errorf("got error %v", err)
 						errors = multierror.Append(errors, err)
-						log.Errorf("got erro1r %v", errors)
 					} else {
-						log.Info("returning")
 						close(errDone)
 						return
 					}
@@ -85,7 +82,6 @@ func UnmarshalandStore(ctx context.Context, f *Flago, flagData []byte, flagFamil
 		close(f.Manager.ErrorChan)
 		//time.Sleep(5*time.Second)
 		<-errDone
-		defer log.Errorf("blhgsgh   %v %v", len(f.Manager.ErrorChan), errors)
 		return errors
 
 	case proto.CreateFlagReq_REFERENCE_TYPE.String():

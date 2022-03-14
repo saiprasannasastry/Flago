@@ -236,6 +236,27 @@ func TestServer(t *testing.T) {
 		assert.Equal(t, 3, len(resp.Flags))
 	})
 
+	t.Run("On Flag customer", func(t *testing.T) {
+		resp, err := flagReq.OnFlag(ctx, &proto.FlagReq{Feature: "doesnt matter", CustomerName: "Twilio", CustomerId: "1"})
+		require.NoError(t, err)
+		assert.Equal(t, true, resp.Enabled)
+
+		resp, err = flagReq.OnFlag(ctx, &proto.FlagReq{Feature: "doesnt matter", CustomerName: "Twilio", CustomerId: "1"})
+		require.NoError(t, err)
+		assert.Equal(t, true, resp.Enabled)
+
+	})
+	t.Run("OFF Flag customer", func(t *testing.T) {
+		resp, err := flagReq.OffFlag(ctx, &proto.FlagReq{Feature: "doesnt matter", CustomerName: "Twilio", CustomerId: "1"})
+		require.NoError(t, err)
+		assert.Equal(t, true, resp.Enabled)
+
+		resp, err = flagReq.OffFlag(ctx, &proto.FlagReq{Feature: "doesnt matter", CustomerName: "Twilio", CustomerId: "1"})
+		require.NoError(t, err)
+		assert.Equal(t, false, resp.Enabled)
+
+	})
+
 	tearDown(redisClient)
 }
 

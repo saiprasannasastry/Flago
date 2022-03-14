@@ -122,10 +122,19 @@ func (p Pool) AddToRef(refType string, feature string) error {
 	return error
 }
 
+func (p Pool) AddFlag(refType string, feature string) (int64, error) {
+	return p.RedisClient.SAdd(refType, feature).Result()
+}
+func (p Pool) DeleteFlag(refType string, feature string) (int64, error) {
+	return p.RedisClient.SRem(refType, feature).Result()
+}
+
 //Get all customers returns us list of customers for given data
 func (p Pool) GetAllCustomers(refType string) ([]string, error) {
 	return p.RedisClient.SMembers(refType).Result()
 }
+
+//Get flag for customer returns if the flag is enabled for customer
 func (p Pool) GetFlagForCustomer(customerDetails, feature string) (bool, error) {
 	return p.RedisClient.SIsMember(customerDetails, feature).Result()
 }

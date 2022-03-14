@@ -92,10 +92,40 @@ func (f *Flago) GetFlags(ctx context.Context, input *proto.FlagReq) (*proto.GetF
 }
 
 func (f *Flago) OnFlag(ctx context.Context, input *proto.FlagReq) (*proto.FlagResp, error) {
-	return nil, nil
+	flagDetails, err := f.redisPool.GetFlagForCustomer(input.CustomerName+"::"+input.CustomerId, input.Feature)
+	if err != nil {
+		log.WithError(err).Errorf("failed to get flag details for customer %v", input.CustomerName)
+		return nil, err
+	}
+	if flagDetails {
+		log.Warn("flag already enabled , not doing anything")
+		return &proto.FlagResp{Enabled: flagDetails}, nil
+	}
+	added, err := f.redisPool.AddFlag(input.CustomerName+"::"+input.CustomerId, input.Feature)
+	if err != nil {
+		log.WithError(err).Errorf("failed to turn  flag on for customer %v", input.CustomerName)
+		return nil, err
+	}
+
+	return &proto.FlagResp{Enabled: added == int64(1)}, nil
 }
 func (f *Flago) OffFlag(ctx context.Context, input *proto.FlagReq) (*proto.FlagResp, error) {
-	return nil, nil
+	flagDetails, err := f.redisPool.GetFlagForCustomer(input.CustomerName+"::"+input.CustomerId, input.Feature)
+	if err != nil {
+		log.WithError(err).Errorf("failed to get flag details for customer %v", input.CustomerName)
+		return nil, err
+	}
+	if !flagDetails {
+		log.Warn("flag already disabled , not doing anything")
+		return &proto.FlagResp{Enabled: flagDetails}, nil
+	}
+	deleted, err := f.redisPool.DeleteFlag(input.CustomerName+"::"+input.CustomerId, input.Feature)
+	if err != nil {
+		log.WithError(err).Errorf("failed DeleteFlag flag for customer %v", input.CustomerName)
+		return nil, err
+	}
+
+	return &proto.FlagResp{Enabled: (deleted == int64(1))}, nil
 }
 
 //work spins up concurrent workers to add data to redis
