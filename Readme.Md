@@ -1,5 +1,5 @@
 ## Flago
-Flago is a feature-flagging solution built on top of redis.Right now flago works only of feature deployments, but could easily be developed to accomodate more flags
+Flago is a feature-flagging solution built on top of redis.Flago s a feature-flagging system designed to let you change rollout strategies without changing your code using RPC.Right now flago works only of feature deployments, but could easily be developed to accomodate more flags
 Flago is eventually consistent and takes <60s to replicate across data stores.
 
 ## Features
@@ -17,5 +17,5 @@ Flago enables complex rollouts by separating the two concerns in feature-flaggin
 
 1. The control plane is where you define your flags, perhaps through a web UI, a CLI tool, an API, or all of the above. Flago lets you define flags with a basic expression syntax that's just powerful enough to cover most use-cases.
 2. The data plane is the place in your code that checks whether to use a feature or not. Flago keeps this as simple as possible. You ask Flago whether a flag is enabled for a customer or not. All you get is a true/false, or an error if the flag backend can't be reached.
-
+See the test folder or pkg/service/service_test.go on how to make RPC calls
 
