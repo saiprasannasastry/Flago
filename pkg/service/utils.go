@@ -49,6 +49,7 @@ func UnmarshalandStore(ctx context.Context, f *Flago, flagData []byte, flagFamil
 		}
 		f.Manager.TaskChan = make(chan FlagReq, 100)
 		f.Manager.ErrorChan = make(chan error, 100)
+
 		//	newCtx := context.Background()
 		//if at all we get multiple customers for one feature, we can run all of them in background
 		for i := 0; i < f.Manager.WorkerCount; i++ {
@@ -62,14 +63,29 @@ func UnmarshalandStore(ctx context.Context, f *Flago, flagData []byte, flagFamil
 		close(f.Manager.TaskChan)
 
 		var errors error
+		errDone := make(chan struct{})
 		go func() {
-			for err := range f.Manager.ErrorChan {
-				errors = multierror.Append(errors, err)
+			for {
+				select {
+				case err, ok := <-f.Manager.ErrorChan:
+					if ok {
+						log.Errorf("got error %v", err)
+						errors = multierror.Append(errors, err)
+						log.Errorf("got erro1r %v", errors)
+					} else {
+						log.Info("returning")
+						close(errDone)
+						return
+					}
+
+				}
 			}
 		}()
-
 		f.Manager.Wg.Wait()
 		close(f.Manager.ErrorChan)
+		//time.Sleep(5*time.Second)
+		<-errDone
+		defer log.Errorf("blhgsgh   %v %v", len(f.Manager.ErrorChan), errors)
 		return errors
 
 	case proto.CreateFlagReq_REFERENCE_TYPE.String():

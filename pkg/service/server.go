@@ -96,12 +96,14 @@ func (f *Flago) OffFlag(ctx context.Context, input *proto.FlagReq) (*proto.FlagR
 func (m *Manager) Work(ctx context.Context, fn func(string, string, string) error, workerNumber int) {
 	log.Infof("spawnning worker %v", workerNumber)
 	defer m.Wg.Done()
+	defer log.Info("done working")
 	for {
 		select {
 		case t, ok := <-m.TaskChan:
 			if ok {
 				err := fn(t.CustomerName, t.CustomerId, t.Feature)
 				if err != nil {
+					log.Infof("pushing error from %v", workerNumber)
 					m.ErrorChan <- err
 				}
 			} else {
