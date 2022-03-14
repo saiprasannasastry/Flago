@@ -20,15 +20,6 @@ type Flago struct {
 }
 type FlagExpressionType string
 
-const (
-	FlagExpressionTypeConstant FlagExpressionType = "constant"
-	FlagExpressionTypePercent                     = "percent"
-	FlagExpressionValueIn                         = "value_in"
-	FlagExpressionNot                             = "not"
-	FlagExpressionAllOf                           = "all_of"
-	FlagExpressionAnyOf                           = "any_of"
-	FlagExpressionRef                             = "ref"
-)
 
 type Manager struct {
 	TaskChan     chan FlagReq
@@ -82,14 +73,25 @@ func (f *Flago) CreateFlag(ctx context.Context, input *proto.CreateFlagReq) (*em
 	return new(emptypb.Empty), UnmarshalandStore(ctx, f, input.FlagData, input.FlagFamily.String())
 }
 
-func (f *Flago) GetFlag(ctx context.Context, input *proto.GetFlagReq) (*proto.FlagResp, error) {
-	flagDetails, err := f.redisPool.GetFlagForCustomer(input.FlagData.CustomerName+"::"+input.FlagData.CustomerId, input.FlagData.Feature)
+func (f *Flago) GetFlag(ctx context.Context, input *proto.FlagReq) (*proto.FlagResp, error) {
+	flagDetails, err := f.redisPool.GetFlagForCustomer(input.CustomerName+"::"+input.CustomerId, input.Feature)
 	if err != nil {
-		log.WithError(err).Errorf("failed to get flag details for customer %v", input.FlagData.CustomerName)
+		log.WithError(err).Errorf("failed to get flag details for customer %v", input.CustomerName)
 		return nil, err
 	}
 	return &proto.FlagResp{Enabled: flagDetails}, nil
 }
+func (f *Flago) GetFlags(ctx context.Context, input *proto.FlagReq) (*proto.GetFlagResp, error) {
+	flagDetails, err := f.redisPool.GetAllCustomers(input.CustomerName + "::" + input.CustomerId)
+	if err != nil {
+		log.WithError(err).Errorf("failed to get flag details for customer %v", input.CustomerName)
+		return nil, err
+	}
+	log.Infof("%v", flagDetails)
+	return &proto.GetFlagResp{Flags: flagDetails}, nil
+
+}
+
 func (f *Flago) OnFlag(ctx context.Context, input *proto.FlagReq) (*proto.FlagResp, error) {
 	return nil, nil
 }

@@ -1,0 +1,85 @@
+syntax="proto3";
+
+package flago;
+option go_package = "github.com/segmentio/Flago/pkg/proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+//createFlagReq allows the user to define the FlagFamily ,flagData
+message createFlagReq{
+  enum Family{
+    UNIVERSAL_DISABLED=0;
+    UNIVERSAL_ENABLED=1;
+    PERCENTAGE_OF=2;
+    COMBINATION_OF=3;
+    SET_OF=4;
+    REFERENCE_TYPE=5;
+  }
+  //flagFamily is the enum of options that we allow to be set for computation
+  Family flagFamily=1;
+  //flagData takes all values as bytes so that we can unmarsal accordingly
+  bytes flagData=2;
+}
+
+//FlagReq contains details of customer and flag
+message FlagReq{
+  //Unique Customer ID
+  string customerId=1;
+  //Customer Name
+  string customerName=2;
+  //Feature for enabling/disabling request
+  string feature=3;
+}
+//FlagResp specifies if the given flag is enables for customer
+message FlagResp{
+  //enabled tells whether the flag is enabled or not
+  bool enabled=1;
+}
+message GetFlagResp{
+  repeated string flags=1;
+}
+
+service  FlagoService{
+  //Create Flag allows you to define new set of flags
+  rpc CreateFlag(createFlagReq) returns (google.protobuf.Empty){
+    option(google.api.http) = {
+      // Define HTTP mapping.
+      // Client example - create flagReq based on flag family
+      //  curl -d'{"flag_family":"UNIVERSALLY_DISABLED","feature":"feature0"}' http://DOMAIN_NAME/v1/flago/createflag
+      post:"/v1/flago/createflag"
+      body:"*"
+    };
+  };
+  //GetFlag allows the control plane to query dataPlane to
+  // validate if the flag is enabled or not
+  rpc GetFlag(FlagReq) returns (FlagResp){
+    option(google.api.http) = {
+      get:"/v1/flago/getflag/{customerId}/{customerName}/{feature}"
+    };
+  };
+  //GetFlags returns list of all flags enabled for customer
+  rpc GetFlags(FlagReq)returns (GetFlagResp){
+    option(google.api.http) = {
+      get:"/v1/flago/getflags/{customerId}/{customerName}"
+    };
+  };
+  // OnFlag turns the flag on
+  // so the control plane can check get get all data
+  // from Data plane when Flag is enabled
+  rpc OnFlag(FlagReq) returns (FlagResp){
+    option(google.api.http) = {
+      post:"/v1/flago/onflag"
+      body:"*"
+    };
+  };
+
+  // OffFlag turns the flag on
+  // so the control plane can check get get all data
+  // from Data plane when Flag is enabled
+  rpc OffFlag(FlagReq) returns (FlagResp){
+    option(google.api.http) = {
+      post:"/v1/flago/offflag"
+      body:"*"
+    };
+  };
+}

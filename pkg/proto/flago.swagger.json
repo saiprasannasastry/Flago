@@ -1,0 +1,306 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "flago.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "FlagoService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/flago/createflag": {
+      "post": {
+        "summary": "Create Flag allows you to define new set of flags",
+        "operationId": "FlagoService_CreateFlag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/flagocreateFlagReq"
+            }
+          }
+        ],
+        "tags": [
+          "FlagoService"
+        ]
+      }
+    },
+    "/v1/flago/getflag/{customerId}/{customerName}/{feature}": {
+      "get": {
+        "summary": "GetFlag allows the control plane to query dataPlane to\nvalidate if the flag is enabled or not",
+        "operationId": "FlagoService_GetFlag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/flagoFlagResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "customerId",
+            "description": "Unique Customer ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerName",
+            "description": "Customer Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "feature",
+            "description": "Feature for enabling/disabling request",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FlagoService"
+        ]
+      }
+    },
+    "/v1/flago/getflags/{customerId}/{customerName}": {
+      "get": {
+        "summary": "GetFlags returns list of all flags enabled for customer",
+        "operationId": "FlagoService_GetFlags",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/flagoGetFlagResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "customerId",
+            "description": "Unique Customer ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customerName",
+            "description": "Customer Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "feature",
+            "description": "Feature for enabling/disabling request",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FlagoService"
+        ]
+      }
+    },
+    "/v1/flago/offflag": {
+      "post": {
+        "summary": "OffFlag turns the flag on\nso the control plane can check get get all data\nfrom Data plane when Flag is enabled",
+        "operationId": "FlagoService_OffFlag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/flagoFlagResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/flagoFlagReq"
+            }
+          }
+        ],
+        "tags": [
+          "FlagoService"
+        ]
+      }
+    },
+    "/v1/flago/onflag": {
+      "post": {
+        "summary": "OnFlag turns the flag on\nso the control plane can check get get all data\nfrom Data plane when Flag is enabled",
+        "operationId": "FlagoService_OnFlag",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/flagoFlagResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/flagoFlagReq"
+            }
+          }
+        ],
+        "tags": [
+          "FlagoService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "createFlagReqFamily": {
+      "type": "string",
+      "enum": [
+        "UNIVERSAL_DISABLED",
+        "UNIVERSAL_ENABLED",
+        "PERCENTAGE_OF",
+        "COMBINATION_OF",
+        "SET_OF",
+        "REFERENCE_TYPE"
+      ],
+      "default": "UNIVERSAL_DISABLED"
+    },
+    "flagoFlagReq": {
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "string",
+          "title": "Unique Customer ID"
+        },
+        "customerName": {
+          "type": "string",
+          "title": "Customer Name"
+        },
+        "feature": {
+          "type": "string",
+          "title": "Feature for enabling/disabling request"
+        }
+      },
+      "title": "FlagReq contains details of customer and flag"
+    },
+    "flagoFlagResp": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "enabled tells whether the flag is enabled or not"
+        }
+      },
+      "title": "FlagResp specifies if the given flag is enables for customer"
+    },
+    "flagoGetFlagResp": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "flagocreateFlagReq": {
+      "type": "object",
+      "properties": {
+        "flagFamily": {
+          "$ref": "#/definitions/createFlagReqFamily",
+          "title": "flagFamily is the enum of options that we allow to be set for computation"
+        },
+        "flagData": {
+          "type": "string",
+          "format": "byte",
+          "title": "flagData takes all values as bytes so that we can unmarsal accordingly"
+        }
+      },
+      "title": "createFlagReq allows the user to define the FlagFamily ,flagData"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
