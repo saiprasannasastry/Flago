@@ -83,7 +83,12 @@ func (f *Flago) CreateFlag(ctx context.Context, input *proto.CreateFlagReq) (*em
 }
 
 func (f *Flago) GetFlag(ctx context.Context, input *proto.GetFlagReq) (*proto.FlagResp, error) {
-	return nil, nil
+	flagDetails, err := f.redisPool.GetFlagForCustomer(input.FlagData.CustomerName+"::"+input.FlagData.CustomerId, input.FlagData.Feature)
+	if err != nil {
+		log.WithError(err).Errorf("failed to get flag details for customer %v", input.FlagData.CustomerName)
+		return nil, err
+	}
+	return &proto.FlagResp{Enabled: flagDetails}, nil
 }
 func (f *Flago) OnFlag(ctx context.Context, input *proto.FlagReq) (*proto.FlagResp, error) {
 	return nil, nil

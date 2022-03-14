@@ -39,6 +39,8 @@ service  FlagoService{
   //GetFlag allows the control plane to query dataPlane to
   // validate if the flag is enabled or not
   rpc GetFlag(getFlagReq) returns (FlagResp);
+  //GetFlags returns list of all flags enabled for customer
+  rpc GetFlags(getFlagReq)returns (stream FlagReq);
   // OnFlag turns the flag on
   // so the control plane can check get get all data
   // from Data plane when Flag is enabled

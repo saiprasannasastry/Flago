@@ -126,7 +126,9 @@ func (p Pool) AddToRef(refType string, feature string) error {
 func (p Pool) GetAllCustomers(refType string) ([]string, error) {
 	return p.RedisClient.SMembers(refType).Result()
 }
-
+func (p Pool) GetFlagForCustomer(customerDetails, feature string) (bool, error) {
+	return p.RedisClient.SIsMember(customerDetails, feature).Result()
+}
 func (p Pool) removeKey(keyName string, feature string) error {
 
 	removed := p.RedisClient.SRem(keyName, feature)

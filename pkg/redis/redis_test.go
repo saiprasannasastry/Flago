@@ -77,7 +77,7 @@ func TestRedis(t *testing.T) {
 		assert.Equal(t, 2, enCount)
 	})
 	t.Run("enable flag for set of customers", func(t *testing.T) {
-	//	teardown(redisClient)
+
 		feature1, feature2 := "Feature0", "Feature1"
 		err := client.EnableAllCustomers(feature1)
 		//already enabled above
@@ -104,7 +104,6 @@ func TestRedis(t *testing.T) {
 			err = client.AddToSetOfcustomers(customerName, customerId, "feature3")
 			require.NoError(t, err)
 		}()
-
 
 		err = client.AddToSetOfcustomers(customerName, customerId, feature1)
 		require.Error(t, err)
@@ -134,6 +133,24 @@ func TestRedis(t *testing.T) {
 		wg.Wait()
 		err = client.AddToRef("alpha", feature1)
 		require.NoError(t, err)
+	})
+
+	t.Run("Get all customers", func(t *testing.T) {
+
+		customers, err := client.GetAllCustomers("alpha")
+		require.NoError(t, err)
+		assert.Equal(t, len(customers), 2)
+	})
+
+	t.Run("Get Flag for customer", func(t *testing.T) {
+
+		flag, err := client.GetFlagForCustomer("test::1", "feature0")
+		require.NoError(t, err)
+		assert.Equal(t, flag, true)
+
+		flag, err = client.GetFlagForCustomer("test::153", "feature0")
+		require.NoError(t, err)
+		assert.Equal(t, flag, false)
 	})
 
 }
