@@ -21,7 +21,7 @@ import (
 func main() {
 	const maxConnections = 10
 	timeout := 1 * time.Minute
-	redisAddr := fmt.Sprintf("%s:%s", "34.125.145.148", "6379")
+	redisAddr := fmt.Sprintf("%s:%s", "REDIS_ADDR", "6379")
 
 	redisClient, _ := redis_pkg.GetRedisClient(redisAddr, maxConnections, timeout)
 	var wg sync.WaitGroup
